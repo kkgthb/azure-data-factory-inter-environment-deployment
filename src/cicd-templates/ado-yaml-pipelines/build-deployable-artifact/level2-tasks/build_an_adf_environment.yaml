@@ -1,0 +1,62 @@
+parameters:
+
+- name: 'sourceSubscriptionId'
+  displayName: 'Id of the Azure subscription in which your "source" ADF resource lives'
+  type: 'string'
+
+- name: 'sourceResourceGroupName'
+  displayName: 'Name of the Azure resource group in which your "source" ADF resource lives'
+  type: 'string'
+
+- name: 'sourceAdfResourceName'
+  displayName: 'Name of your "source" Azure ADF resource'
+  type: 'string'
+
+- name: 'pathInRepoToPackageJson'
+  displayName: 'Repository path (e.g. "$(Build.Repository.LocalPath)/nodepackage") where your "package.json" can be found'
+  type: 'string'
+
+- name: 'pathInRepoToAdfDefinition'
+  displayName: 'Repository path (e.g. "$(Build.Repository.LocalPath)/adf") where your ADF definition files can be found'
+  type: 'string'
+
+- name: 'subpathForAdfOutput'
+  displayName: 'Path beneath your "package.json" folder (e.g. "adfoutput") into which you would like the ADF compilation output saved temporarily'
+  type: 'string'
+
+
+
+steps:
+
+- task: 'NodeTool@0'
+  displayName: 'Install Node.js onto the CI/CD runtime'
+  inputs:
+    versionSpec: '18.x'
+
+- task: 'Npm@1'
+  displayName: 'Install NPM package(s) from your package.json file into the CI/CD runtime'
+  inputs:
+    command: 'install'
+    workingDir: '${{ parameters.pathInRepoToPackageJson }}'
+    verbose: true
+
+- task: 'Npm@1'
+  displayName: 'Run the equivalent of "Validate All" against the ADF definition to make sure it is OK'
+  inputs:
+    command: 'custom'
+    workingDir: '${{ parameters.pathInRepoToPackageJson }}'
+    customCommand: 'run build export ${{ parameters.pathInRepoToAdfDefinition }} /subscriptions/${{ parameters.sourceSubscriptionId }}/resourceGroups/${{ parameters.sourceResourceGroupName }}/providers/Microsoft.DataFactory/factories/${{ parameters.sourceAdfResourceName }}'
+
+- task: Npm@1
+  displayName: 'Generate ARM template from ADF definition'
+  inputs:
+    command: 'custom'
+    workingDir: '${{ parameters.pathInRepoToPackageJson }}'
+    customCommand: 'run build export ${{ parameters.pathInRepoToAdfDefinition }} /subscriptions/${{ parameters.sourceSubscriptionId }}/resourceGroups/${{ parameters.sourceResourceGroupName }}/providers/Microsoft.DataFactory/factories/${{ parameters.sourceAdfResourceName }} "${{ parameters.subpathForAdfOutput }}"'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish ARM template into CI/CD pipeline artifact store'
+  inputs:
+    targetPath: '${{ parameters.pathInRepoToPackageJson }}/${{ parameters.subpathForAdfOutput }}'
+    artifact: 'adfArmTemplateOutput'
+    publishLocation: 'pipeline'

@@ -1,0 +1,69 @@
+parameters:
+
+- name: 'azureDevOpsServiceConnectionName'
+  displayName: 'Name of the ADO Service Connection capable of deploying to the target Azure Data Factory resource'
+  type: 'string'
+
+- name: 'targetSubscriptionId'
+  displayName: 'Id of the Azure subscription in which your "target" ADF resource lives'
+  type: 'string'
+
+- name: 'targetResourceGroupName'
+  displayName: 'Name of the Azure resource group in which your "target" ADF resource lives'
+  type: 'string'
+
+- name: 'targetAdfResourceName'
+  displayName: 'Name of your "target" Azure ADF resource'
+  type: 'string'
+
+- name: 'targetLocation'
+  displayName: 'Azure region in which your "target" Azure ADF resource lives'
+  type: 'string'
+
+- name: 'targetOverrideParameters'
+  displayName: 'A single 1-level object with ADF parameter names you would like to set in your "target" Azure ADF resources as object key names and values for them as object values.'
+  type: 'object'
+
+
+
+steps:
+
+- task: 'PowerShell@2'
+  displayName: 'Concatenate ADF parameter overrides'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $target_override_parameters_json = '${{ convertToJson(parameters.targetOverrideParameters) }}';
+      $target_override_parameters_object = $target_override_parameters_json | ConvertFrom-Json;
+      $target_override_parameters_concatenated_string = [String]( `
+        ( `
+          $target_override_parameters_object.PSObject.Properties | ForEach-Object { `
+            "-$($_.Name) `"$($_.Value)`"" `
+          } `
+        ) -join " " `
+      );
+      Write-Host("##vso[task.setvariable variable=targetAdfParameterOverrides]" + $target_override_parameters_concatenated_string);
+
+- task: 'DownloadPipelineArtifact@2'
+  displayName: 'Download ADF Build Artifact'
+  inputs: 
+    artifactName: 'adfArmTemplateOutput'
+    targetPath: '$(Pipeline.Workspace)/adfArmTemplateOutput'
+
+- powershell: 'Get-ChildItem -Path "$(Pipeline.Workspace)/adfArmTemplateOutput" -recurse'
+  displayName: 'DEBUG STEP ONLY:  Show artifact file structure to be sure we got the right stuff'
+
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: 'Deploy ADF Artifact to "${{ parameters.targetAdfResourceName }} - ${{ parameters.targetLocation }} -- ${{ parameters.targetResourceGroupName }} --- ${{ parameters.targetSubscriptionId }}"'
+  inputs:
+    azureResourceManagerConnection: ${{ parameters.azureDevOpsServiceConnectionName }}
+    action: 'Create Or Update Resource Group'
+    deploymentMode: 'Incremental'
+    deploymentScope: 'Resource Group'
+    subscriptionId: '${{ parameters.targetSubscriptionId }}'
+    resourceGroupName: '${{ parameters.targetResourceGroupName }}'
+    location: '${{ parameters.targetLocation }}'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateForFactory.json'
+    csmParametersFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateParametersForFactory.json'
+    overrideParameters: '${{ variables.targetAdfParameterOverrides }}'

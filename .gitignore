@@ -1,0 +1,12 @@
+# Don't try to do inline comments.  Things break.
+
+# Ignore ignoreme folder
+.ignoreme
+
+# Ignore secrets
+/.env
+/*.env
+/*.env-*
+
+# Ignore IDE cruft
+.vscode
