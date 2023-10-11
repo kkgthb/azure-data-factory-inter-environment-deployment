@@ -24,6 +24,10 @@ parameters:
   displayName: 'A single 1-level object with ADF parameter names you would like to set in your "target" Azure ADF resources as object key names and values for them as object values.'
   type: 'object'
 
+- name: 'targetOverrideParametersStringTest'
+  displayName: 'DEBUG'
+  type: 'string'
+
 
 
 steps:
@@ -70,4 +74,4 @@ steps:
     templateLocation: 'Linked artifact'
     csmFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateForFactory.json'
     csmParametersFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateParametersForFactory.json'
-    overrideParameters: '${{ variables.targetAdfParameterOverrides }}'
+    overrideParameters: '${{ parameters.targetOverrideParametersStringTest }}' #'${{ variables.targetAdfParameterOverrides }}'
