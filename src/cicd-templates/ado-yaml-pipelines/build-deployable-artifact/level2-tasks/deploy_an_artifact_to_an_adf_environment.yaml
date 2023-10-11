@@ -44,6 +44,10 @@ steps:
       );
       Write-Host("##vso[task.setvariable variable=targetAdfParameterOverrides]" + $target_override_parameters_concatenated_string);
 
+- script: |
+    echo $(targetAdfParameterOverrides)
+  displayName: 'DEBUG STEP ONLY:  Show override parameters concatenated string'
+
 - task: 'DownloadPipelineArtifact@2'
   displayName: 'Download ADF Build Artifact'
   inputs: 
