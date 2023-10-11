@@ -78,4 +78,5 @@ steps:
     templateLocation: 'Linked artifact'
     csmFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateForFactory.json'
     csmParametersFile: '$(Pipeline.Workspace)/adfArmTemplateOutput/ARMTemplateParametersForFactory.json'
-    overrideParameters: '${{ parameters.targetOverrideParametersStringTest }}' #'${{ variables.targetAdfParameterOverrides }}'
+    #overrideParameters: '${{ parameters.targetOverrideParametersStringTest }}' 
+    overrideParameters: '${{ variables.targetAdfParameterOverrides }}'
