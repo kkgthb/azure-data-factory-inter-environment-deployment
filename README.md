@@ -47,18 +47,18 @@ For example, if:
 Then I might choose one of the following 4 naming patterns for all of the App Registrations I create:
 
 1. One App Registration named:
-  * `hr-payroll-helloworld-cicd`
+    * `hr-payroll-helloworld-cicd`
 2. Two App Registrations named:
-  * `hr-payroll-helloworld-stg-cicd`
-  * `hr-payroll-helloworld-prd-cicd`
+    * `hr-payroll-helloworld-stg-cicd`
+    * `hr-payroll-helloworld-prd-cicd`
 3. Two App Registrations named:
-  * `hr-payroll-helloworld-webapp-cicd`
-  * `hr-payroll-helloworld-adf-cicd`
+    * `hr-payroll-helloworld-webapp-cicd`
+    * `hr-payroll-helloworld-adf-cicd`
 4. Four App Registrations named:
-  * `hr-payroll-helloworld-webapp-stg-cicd`
-  * `hr-payroll-helloworld-webapp-prd-cicd`
-  * `hr-payroll-helloworld-adf-stg-cicd`
-  * `hr-payroll-helloworld-adf-prd-cicd`
+    * `hr-payroll-helloworld-webapp-stg-cicd`
+    * `hr-payroll-helloworld-webapp-prd-cicd`
+    * `hr-payroll-helloworld-adf-stg-cicd`
+    * `hr-payroll-helloworld-adf-prd-cicd`
 
 In an enterprise setting, ask your team, as well as teams of colleagues specializing in identity and access management, infosec, application development, cloud infrastructure, and software architecture if there are any standards you should be following.
 
