@@ -93,10 +93,16 @@ Is your production ADF resource ready to talk to _other_ production Azure resour
 
 Again, since tickets can take time to fulfill, think about this right away, before you even start writing any deployment-oriented code.
 
-Ask around whether your production ADF resource has been given a [System-Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview), and whether:
+#### Authentication
+
+Ask around whether your production ADF resource has been given a [System-Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+
+#### Authorization
+
+Also ask around whether:
 
 1. an appropriate RBAC role _(e.g. "Key Vault Reader")_ has been assigned...
-2. ...to your production ADF resource's Managed Identity...
+2. ...to your production ADF resource's System-Assigned Managed Identity...
 3. ...scoped to the Azure **Resource ID** of, for example, your production Key Vault resource for the "hello world" project.
 
 If not, find out how to get that done and get the ball rolling.
