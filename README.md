@@ -62,7 +62,7 @@ Then I might choose one of the following 4 naming patterns for all of the App Re
 
 In an enterprise setting, ask your team, as well as teams of colleagues specializing in identity and access management, infosec, application development, cloud infrastructure, and software architecture if there are any standards you should be following.
 
-While we're talking about "authentication" right now, ultimately, you'll be granting "authorization" privileges to these "identities," so it might help maintain sanity if you **name things according to what they're expected to be able to do**_.
+While we're talking about "authentication" right now, ultimately, you'll be granting "authorization" privileges to these "identities," so it might help maintain sanity if you **name things according to what they're expected to be able to do**.
 
 * The fewer app registrations you create, the more _**powerful**_ you'll have to make each one's "authorization" -- which could be a security vulnerability and break the "principle of least privilege."
 * On the other hand, the more app registrations you create, the more your team will have to _**remember**_ you created -- and human unmanageability to the point of poor maintenance also makes application architecture components security vulnerabilities.
