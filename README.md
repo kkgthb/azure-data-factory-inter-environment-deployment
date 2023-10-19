@@ -29,7 +29,7 @@ Permissions always consist of an **authentication** aspect _("prove that you are
 
 You'll need to give your CI/CD pipeline codebase a special identity that it can use when asked to **authenticate** itself while trying to deploy an ADF definition into production _("Hi, I'm a CI/CD codebase dedicated to the 'Hello World' ADF project!")_.
 
-To do that, you'll create a Microsoft Entra ID _(formerly "Azure Active Directory" / "AAD")_ "**[Service Principal](https://learn.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals?tabs=browser)**" -- specifically one of the "**[App Registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)**" variety.
+To do that, you'll create a Microsoft Entra ID _("Entra," formerly "Azure Active Directory" / "AAD")_ "**[Service Principal](https://learn.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals?tabs=browser)**" -- specifically one of the "**[App Registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)**" variety.
 
 _(Note:  In an enterprise setting, you might have to open a ticket to have one created.  Alternatively, you might have -- or be able to ask for -- a Privileged Identity Management ("PIM") role that lets you create an App Registration yourself, and into which you can temporarily escalate your own privileges into as needed.)_
 
@@ -71,11 +71,40 @@ The patterns by which your cloud infrastructure team has chosen to cluster vario
 
 There's no 100% correct way to scope and name App Registrations, but your enterprise and/or team probably has standardized ways.  Ask around.
 
+##### Federated credentials and your CI/CD codebase
+
+You'll also need to [attach a "federated credential" to the Service Principal](https://learn.microsoft.com/en-us/azure/active-directory/workload-identities/workload-identity-federation-create-trust) associated with the App Registration you just created.
+
+You might be able to do this yourself _(particularly with "PIM" privilege escalation)_, or you might need to open a ticket to have one of your colleagues do it for you.  If you open a ticket, be sure to provide the details that my notes say you'd need if you were doing it yourself.
+
+###### Azure DevOps
+
+If your codebase is stored in an Azure DevOps Repo, you'll need to add a federated credential in Entra using the "**Other issuer**" scenario picklist option.  You'll get the "**Issuer**" and "**Subject identifier**" details you need out of the Azure DevOps portal.  Be sure to give the federated credential a good **name** _(note that you can't rename the federated credential once you save it, though you can delete it and create an identical one with a new name)_ and, preferably, a good 600-character-or-less **description**.
+
+Over in the Azure DevOps portal, [create a new **Service Connection**](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity) of the "**Azure Resource Manager**" type and pick the "**Workload Identity federation (manual)**" option.
+
+Pick a meaningful name for it like "**`Hello World`**," "**`HR Payroll Hello World ADF Production`**," etc. depending on what you named your Entra App Registration and depending on whether things like "HR" and "Payroll" are already implied by the names of your Azure DevOps "organization" and "project."  Click the "**Next**" button.
+
+Copy the "**Issuer**" and "**Subject identifier**" values onto your clipboard.  If you're setting up your Entra Service Principal's Federated Credential yourself, go ahead and paste these values into the corresponding fields in Entra's "**Add a credential**" wizard.  _(And, after adding a name and possibly a description, click the "**Add**" button.)_  If you're opening a support ticket, be sure to include these 2 details along with the name you'd like to give your federated credential.
+
+Getting your Entra Service Principal's Federated Credential created will make sure that when you finish saving your Azure DevOps Service Connection that points to your Entra Service Principal, you don't get the following error:
+
+> Azure Active Directory rejected the token issued by Azure DevOps with error code AADSTS70021: No matching federated identity record found for presented assertion.
+
+By the way, every Azure DevOps project has a unique ID -- you just don't usually see it in your URL bar while browsing around Azure DevOps.  The unique ID of your Azure DevOps project ends up in the "issuer" value, and the name of the service connection you create ends up in your "subject identifier" value, so you end up with something like:
+
+- `https://vstoken.dev.azure.com/a1234b5c-d6ef-1234-987-abcdefabcdef`
+- `sc://your-ado-org-name/your-ado-project-name/HR Payroll Hello World ADF Production`
+
+Click the "**Keep as draft**" button at the bottom of the "New Azure service connection" right-hand flyout pane in Azure DevOps to close it out and come back to it later.  _(There are some "authentication" things we have to take care of before we can finish creating it, but we had to start creating it to get the "issuer" and "subject identifier" details we needed, since it's not otherwise easy to figure out your ADO project's unique ID.)_
+
 ##### GitHub.com federated identity and OIDC
 
-If your codebase is stored at GitHub.com, you'll probably also want to attach a "federated identity" to each app registration to help GitHub.com log into the App Registration over OIDC.
+If your codebase is stored at GitHub.com, you'll need to add a federated credential using the "**GitHub Actions deploying Azure resources**" scenario picklist option -- you'll get the "**Issuer**" and "**Subject identifier**" details you need out of the Azure DevOps portal.  Be sure to know the organization name or username of the GitHub account hosting your codebase, the repository name of your codebase, and ...TODO... .
 
-#### Authorization
+...TODO...
+
+#### Authorization _(to deploy data factories)_
 
 Once you've created an App Registration to represent the CI/CD codebase you'd like to deploy your ADF definition into production with, you need to specify that it's actually allowed to do so, using an "Azure RBAC Role Assignment."
 
@@ -87,7 +116,13 @@ In that case, you'd need to:
 2. ...to `hr-payroll-helloworld-adf-prd-cicd`...
 3. ...scoped to the Azure **Resource ID** of your production ADF resource for the "hello world" project.
 
-_(Or open a ticket with your colleagues to have them assign it on your behalf.  Again, consider asking around whether AAD PIM might let you do this yourself rather than having to open a ticket.)_
+_(Or open a ticket with your colleagues to have them assign it on your behalf.  Again, consider asking around whether Entra PIM might let you do this yourself rather than having to open a ticket.)_
+
+###### Finish creating your ADO Service Connection
+
+Once the "Data Factory Contributor" role has been assigned and you've waited a minute or few, you should be able to finish out creating your "`HR Payroll Hello World ADF Production`" Azure DevOps Service Connection that points at `hr-payroll-helloworld-adf-prd-cicd` _("**Verify and save**" button, bottom right, to finish it out)_, using the subscription ID, subscription name, and tenant ID of the Azure subscription (and its parent tenant) that contain your production ADF resource.
+
+Note:  I believe that if you also have RBAC roles assigned to your `hr-payroll-helloworld-adf-prd-cicd` Entra Service Principal that are scoped to, say, your "**staging**" ADF resource ID -- even if that resource lives in a different Azure subscription than you punched into the Azure DevOps Service Connection creation wizard -- your "`HR Payroll Hello World ADF Production`" ADO Service Connection will also be usable for CI/CD pipeline codebases that want to deploy to your "staging" ADF resource.  _(This is why I said to think ahead about authorization before you name things for authentication!)_  I need to test it to be sure, but if true, I kind of wonder why Microsoft even bothers making you punch an Azure subscription ID into the ADO service connection creation wizard at all.
 
 ### Runtime permissions
 
@@ -99,7 +134,7 @@ Again, since tickets can take time to fulfill, think about this right away, befo
 
 Ask around whether your production ADF resource has been given a [System-Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
 
-#### Authorization
+#### Authorization _(to, say, read Key Vault values)_
 
 Also ask around whether:
 
