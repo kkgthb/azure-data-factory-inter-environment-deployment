@@ -79,7 +79,7 @@ You might be able to do this yourself _(particularly with "PIM" privilege escala
 
 ###### Azure DevOps
 
-If your codebase is stored in an Azure DevOps Repo, you'll need to add a federated credential in Entra using the "**Other issuer**" scenario picklist option.  You'll get the "**Issuer**" and "**Subject identifier**" details you need out of the Azure DevOps portal.  Be sure to give the federated credential a good **name** _(note that you can't rename the federated credential once you save it, though you can delete it and create an identical one with a new name)_ and, preferably, a good 600-character-or-less **description**.
+If your codebase is stored in an Azure DevOps Repo, you'll need to add a federated credential in Entra using the "**Other issuer**" scenario picklist option.  You'll get the "**Issuer**" and "**Subject identifier**" details you need out of the Azure DevOps portal.  Be sure to give the federated credential a good **name** _(note that you can't rename the federated credential once you save it, though you can delete it and create an identical one with a new name)_ and, preferably, a good 600-character-or-less **description**.  Honestly ... so far, I've just named mine "`log-ado-service-connection-into-this-service-principal`."  The name only has to be unique _within_ the context of the service principal, so it doesn't have to be terribly creative.
 
 Over in the Azure DevOps portal, [create a new **Service Connection**](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity) of the "**Azure Resource Manager**" type and pick the "**Workload Identity federation (manual)**" option.
 
